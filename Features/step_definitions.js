@@ -1,11 +1,10 @@
 import { setDefaultTimeout } from '@cucumber/cucumber';
-setDefaultTimeout(20 * 1000); // 20 seconds
+setDefaultTimeout(30 * 1000); // 20 seconds
 import { Given, When, Then, Before, After } from '@cucumber/cucumber';
 import { chromium } from 'playwright';      // Import playwright here
 import { expect } from '@playwright/test';
 import { Rudderstackpage } from '../Pages/Rudderstackpage.js';
 import axios from 'axios';
-
 
 let browser;
 let context;
@@ -23,30 +22,35 @@ After(async function () {
   await context.close();
   await browser.close();
 });
-
+//********************************************************1st Login******************************************************************************************** */
 //login 
 Given('I am on the Rudderstack login page', async function () {
- 
+  console.log("login started")
   await rudderstack.openLoginPage();
 });
 
 When('I enter valid credentials and click the login button', async function () {
   await rudderstack.login();
+  console.log('login done')
 });
 
 When('I see a security page asking to enable E2F and I choose "I\'ll do this later" and I click "Go to Dashboard"', 
   async function () {
+    console.log('secuirty started')
     await rudderstack.security();
+    console.log('secuirty done')
+
   });
 
 Then('I should be redirected to the Connections page', async function () {
+  console.log('COnnections started')
   // Optionally log the URL to debug
   console.log('Redirected to:', await this.page.url());
 
   // Wait up to 15 seconds for "Connections" text anywhere on the page
   await expect(this.page.getByText('Connections')).toBeVisible({ timeout: 15000 });
 });
-
+///************************************************************2nd Data Key and Write Key ********************************************************************************/
 // Read DataPlan url and Write key
 Given ('the user is already logged in and on the Connections page',async function()
 {
@@ -63,114 +67,115 @@ Given ('the user is already logged in and on the Connections page',async functio
   console.log(' finished gatheringshed  data')
 });
 
-When ('the user reads the Data Plane URL displayed at the top right corner of the page', async function () {
+When ('the user reads the Data Plane URL displayed at the top right corner of the page and write key', async function () {
   this.dataPlaneUrl = await rudderstack.getDataPlaneUrl();  // Ensure the method `getDataPlaneUrl` is defined in `Rudderstackpage`
   console.log("Data Plane URL:", this.dataPlaneUrl);  // Optionally log for debugging
+  console.log('got the keys')
 });
 
-// Store values in world context so each step can access them
-Given('user has already valid write and data plan URL', function () {
-  // Normally you'd retrieve from your Rudderstack class or environment
-  this.dataPlaneUrl = process.env.DATAPLANE_URL //|| 'https://ahvinfetokvzds.dataplane.rudderstack.com';
-  this.writeKey = process.env.WRITE_KEY //|| 'your_write_key_here';
-
-  expect(this.dataPlaneUrl).toBeTruthy();
-  expect(this.writeKey).toBeTruthy();
-  console.log('sucessfully  get the data and write key')
-});
-
-
-// Given('a Webhook destination named {string} has already been created', async function (destinationName) {
-//   await rudderstack.login();
-//   await rudderstack.security();
-//   await rudderstack.connections();
-  
-//   await expect(rudderstack.page.locator(`text=${destinationName}`)).toBeVisible({ timeout: 5000 });
-//   console.log('got the desintaion')
-//   await this.page.waitForTimeout(10000); // pause for 1 sec
-
-// });
-
-
-// When('the user clicks on the {string} tab', async function (tabName) {
-//   if (tabName === 'Events') {
-//     await this.page.click(rudderstack.clickEventTab);
-//   } else {
-//     throw new Error(`Tab "${tabName}" not handled in steps`);
-//   }
-// });
-
-// Then('the user should be navigated to the Events page', async function () {
-//   await expect(this.page.locator(rudderstack.delivered))
-//     .toBeVisible({ timeout: 5000 });
-// });
-
-// Then('the page should display the text {string} to confirm successful navigation', async function (text) {
-//   await expect(this.page.locator(`text=${text}`)).toBeVisible({ timeout: 5000 });
-// });
-
-Given('the user is logged in and has navigated to the Webhook destination page', async function () {
-  rudderstack = new Rudderstackpage(this.page);
-  await rudderstack.openLoginPage();
-  await rudderstack.login();
-  await rudderstack.security();
-  await rudderstack.connections();
-  await rudderstack.gotoWebhookDestination();
-
-  // Wait until we know the destination page is loaded
-  await this.page.waitForSelector(rudderstack.clickEventTab, { timeout: 15000 });
-});
-
-When('the user clicks on the {string} tab', async function (tabName) {
-  if (tabName === 'Events') {
-    await this.page.click(rudderstack.clickEventTab);
-  } else {
-    throw new Error(`Tab "${tabName}" not supported`);
+Then('the Data Plane URL and write key should be captured and stored', async function()
+  {if (!this.dataPlaneUrl || !this.dataPlaneUrl.dataurl || !this.dataPlaneUrl.writekey) {
+    throw new Error('Data Plane URL or Write Key is missing');
   }
+
+  console.log(' Verified the keys:');
+  console.log('Data URL:', this.dataPlaneUrl.dataurl);
+  console.log('Write Key:', this.dataPlaneUrl.writekey);
+  console.log(' Verification done for the keys:');
+
 });
-
-Then('the user should be navigated to the Events page', async function () {
-  await this.page.waitForSelector(rudderstack.delivered, { timeout: 15000 });
-});
-
-Then('the page should display the text {string} to confirm successful navigation', async function (text) {
-  await expect(this.page.getByText(text)).toBeVisible({ timeout: 15000 });
-});
-
-
-// ----------------- Second Feature -----------------
-
-Given('the user is already logged in and has navigated to the Events tab in the Webhook destination', async function () {
-  rudderstack = new Rudderstackpage(this.page);
+//********************************************************************3rd Webhook *********************************************************/
+Given('the user is already logged in and on the Connections page and ready to navigate weebhook', async function ()
+ {
+  console.log('waited for login page')
   await rudderstack.openLoginPage();
+  console.log('Webhook started login')
   await rudderstack.login();
+  console.log('Webhook finished login')
+  console.log('Webhook Started secuity clicks')
   await rudderstack.security();
+  console.log('Webhook finished secuity clicks')
+  console.log('Webhook Started gatheringshed data')
   await rudderstack.connections();
+  console.log('Webhook finished gatheringshed  data')
+});
+When ('the user clicks on the Webhook Automation destination', async function()
+{
   await rudderstack.gotoWebhookDestination();
+});
+
+Then('the page should contain the text Source as a confirmation of the webhookpage', async function () {
+  await rudderstack.verifySourceText();
+});
+
+//************************************************************************ click the tab******************************************************/
+Given('the user is logged in and has navigated to the Webhook destination page',async function()
+{
+  console.log('waited for login page')
+  await rudderstack.openLoginPage();
+  console.log('Tab started login')
+  await rudderstack.login();
+  console.log('Tab finished login')
+  console.log('Tab Started secuity clicks')
+  await rudderstack.security();
+  console.log('Tab finished secuity clicks')
+  console.log('Tab Started gatheringshed data')
+  await rudderstack.connections();
+  console.log('Tab finished gatheringshed  data')
+  await rudderstack.gotoWebhookDestination();
+  console.log("Nvaigation done to webhook page for tab")
+  console.log("Now navoagteing to event tab")
+})
+
+When('the user clicks on the Events tab',async function()
+{
+  await rudderstack.NavigateToEvents();
+})
+
+Then('the page should display the text Events Delivery to confirm successful navigation',async function()
+{
+  await rudderstack.confirmEventTab();
+});
+
+// *************************************************Collection of events***********************************
+Given('the user is already logged in and has navigated to the Events tab in the Webhook destination', async function () {
+console.log('waited for login page')
+  await rudderstack.openLoginPage();
+  console.log('Tab for data started login')
+  await rudderstack.login();
+  console.log('Tab for datab finished login')
+  console.log('Tab for data Started secuity clicks')
+  await rudderstack.security();
+  console.log('Tab for data finished secuity clicks')
+  console.log('Tab for data Started gatheringshed data')
+  await rudderstack.connections();
+  console.log('Tab for data finished gatheringshed  data')
+  await rudderstack.gotoWebhookDestination();
+  console.log("Navigation done to webhook page for Tab for data")
+  await rudderstack.NavigateToEvents();
+  console.log('in the final  page');
+
 });
 
 When('the user reads the count of delivered and failed events, along with their respective percentages', async function () {
- // await this.page.click(rudderstack.dataFromEventsTab);
-  const { deliveredData, failedData } = await rudderstack.dataFromEventsTab();
-  this.deliveredData = deliveredData;
-  this.failedData = failedData;
-  console.log(`Delivered: ${deliveredData}`);
-  console.log(`Failed: ${failedData}`);
+  this.eventData = await rudderstack.dataFromEventsTab(); // stores the result
+  console.log('Delivered:', this.eventData.deliveredData);
+  console.log('Failed:', this.eventData.failedData);
 });
 
-Then('the delivered and failed event counts and percentages should be captured and stored', function () {
-  expect(this.deliveredData).toBeTruthy();
-  expect(this.failedData).toBeTruthy();
+Then('the delivered and failed event counts and percentages should be captured and stored', async function () {
+  // Optionally add assertions if needed
+  expect(this.eventData.deliveredData).toMatch(/\d+/);
+  expect(this.eventData.failedData).toMatch(/\d+/);
+
 });
 
-Then('the user should navigate to the {string} section from the left menu bar', async function (sectionName) {
-  if (sectionName === 'Settings') {
-    await rudderstack.logout();
-  } else {
-    throw new Error(`Section "${sectionName}" not handled in steps`);
+Then('the user should navigate to the {string} section from the left menu bar', async function (section) {
+  if (section === 'Settings') {
+    await rudderstack.navigateToSettingsSection(); // method to click menu and go to Settings
   }
 });
 
 Then('the user should log out from the application', async function () {
-  console.log('User logged out successfully');
+  await rudderstack.logout();
 });

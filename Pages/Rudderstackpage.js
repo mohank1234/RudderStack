@@ -21,12 +21,22 @@ export class Rudderstackpage {
 
     // Webhook Page
     this.webhook = 'span:has-text("Webhook")';
-    this.confirmWebhook = 'h3:has-text("Connections")';
+
+    //confirm webhook
+    this.confirmwebhook = "h4:has-text('Sources')";
 
     // Events Tab
-    this.clickEventTab = '#Events';
-    this.delivered = 'text=Delivered';
-    this.failed = 'text=Failed';
+    this.clickEventTab = '#rc-tabs-0-tab-Events';
+    // this.delivered = 'text=Delivered';
+    // this.failed = 'text=Failed';
+    // Delivered count
+    this.deliveredCount = "div.sc-hHvloA.jFcMOz h2 span";
+    // Failed count
+    this.failedCount = "(//div[contains(@class,'sc-hHvloA jFcMOz')]//h2/span)[2]";
+
+    
+    //confrim Tab
+    this.confirmeventtab = "span:has-text('Events Delivery')";
 
     // Settings / Logout
     this.navigateToSettings = 'text=Settings';
@@ -49,6 +59,7 @@ export class Rudderstackpage {
   await this.page.waitForSelector(this.dolater);
   await this.page.click(this.dolater);
   await this.page.click(this.dashboard);
+  console.log('DaShbaord viewd')
   // Wait for dashboard to load after navigating
 //  await this.page.waitForNavigation({ waitUntil: 'networkidle0' });
 
@@ -79,31 +90,49 @@ export class Rudderstackpage {
   async gotoWebhookDestination() {
     await this.page.click(this.webhook);
     console.log(1)
-    await this.page.locator(this.confirmWebhook).waitFor();
-    console.log(2)
-    await expect(this.page.locator(this.confirmWebhook)).toBeVisible();
-    console.log(3)
-  }
-async dataFromEventsTab() {
-  // Wait until the Events tab is visible and clickable
-  await this.page.waitForSelector(this.clickEventTab, { timeout: 15000 });
-  await this.page.click(this.clickEventTab);
+  } 
 
-  // Wait for the delivered and failed elements to appear
-  await this.page.waitForSelector(this.delivered, { timeout: 15000 });
-  await this.page.waitForSelector(this.failed, { timeout: 15000 });
+  async verifySourceText() {
+    await this.page.waitForSelector(this.confirmwebhook, { state: 'visible' });
+    await expect(this.page.locator(this.confirmwebhook)).toBeVisible();
+}
+ 
+  async NavigateToEvents() {
+  console.log("Waiting for Events tab to be visible...");
+  await this.page.locator(this.clickEventTab).waitFor({ state: 'visible', timeout: 25000 });
 
-  // Read the values
-  const deliveredData = (await this.page.innerText(this.delivered)).trim();
-  const failedData = (await this.page.innerText(this.failed)).trim();
+  console.log("Clicking on Events tab...");
+  await this.page.locator(this.clickEventTab).click();
 
-  return { deliveredData, failedData };
+  console.log("Waiting for Events Delivery header to confirm navigation...");
+  await this.page.locator(this.confirmeventtab).waitFor({ state: 'visible', timeout: 25000 });
+
+  console.log("Navigation done to Events");
 }
 
 
-  async logout() {
-    await this.page.click(this.navigateToSettings);
-    await this.page.locator(this.confirmSettings).waitFor();
-    await this.page.click(this.confirmSettings);
+  async confirmEventTab()
+  {
+    await this.page.waitForSelector(this.confirmeventtab, { state: 'visible' });
+    await expect(this.page.locator(this.confirmeventtab)).toBeVisible();
   }
-}
+    async dataFromEventsTab() {
+      // Wait for the numeric count elements to appear
+      await this.page.waitForSelector(this.deliveredCount, { timeout: 15000 });
+      await this.page.waitForSelector(this.failedCount, { timeout: 15000 });
+
+      // Read numeric counts
+      const deliveredData = (await this.page.textContent(this.deliveredCount)).trim();
+      const failedData = (await this.page.textContent(this.failedCount)).trim();
+
+      // Store in eventData for later use if needed
+      this.eventData = { deliveredData, failedData };
+
+      return this.eventData;
+    }
+      async logout() {
+        await this.page.click(this.navigateToSettings);
+        await this.page.locator(this.confirmSettings).waitFor();
+        await this.page.click(this.confirmSettings);
+      }
+    }
