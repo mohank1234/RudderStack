@@ -1,7 +1,8 @@
-Feature: Naviagate to Webhook page 
+Feature: Navigate to Webhook page
 
-Scenario: Open the Webhook destination from the Connections page
+  Background:
+    Given I am on the Connections page
 
-  Given the user is already logged in and on the Connections page and ready to navigate weebhook
-  When the user clicks on the Webhook Automation destination
-  And the page should contain the text Source as a confirmation of the webhookpage
+  Scenario: Open the Webhook destination from the Connections page
+    When I click on the Webhook Automation destination
+    Then I should see the Webhook Source page

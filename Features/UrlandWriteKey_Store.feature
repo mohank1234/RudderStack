@@ -1,6 +1,8 @@
-Feature: Get the Data plan url and Write key
+Feature: Get the Data plane URL and Write key
 
-Scenario: Capture and store the Data Plane URL and write key from the Connections page successfully
-  Given the user is already logged in and on the Connections page
-  When the user reads the Data Plane URL displayed at the top right corner of the page and write key
-  Then the Data Plane URL and write key should be captured and stored
+  Background:
+    Given I am on the Connections page
+
+  Scenario: Capture and store the Data Plane URL and write key from the Connections page successfully
+    When I read the Data Plane URL and Write Key
+    Then the Data Plane URL and Write Key should be stored

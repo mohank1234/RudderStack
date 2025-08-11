@@ -1,8 +1,9 @@
-Feature:Count the delevery and failed messages count
+Feature: Count the delivery and failed messages
 
-Scenario: Read the count of delivered and failed events successfully
+  Background:
+    Given I am on the Events tab in Webhook destination
 
-  Given the user is already logged in and has navigated to the Events tab in the Webhook destination  
-  When the user reads the count of delivered and failed events, along with their respective percentages  
-  Then the delivered and failed event counts and percentages should be captured and stored  
-  And the user should log out from the application
+  Scenario: Read the count of delivered and failed events successfully
+    When I read delivered and failed event counts
+    Then the delivered and failed counts should be stored
+    And I log out of the application
